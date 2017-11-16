@@ -7,10 +7,6 @@ environment:
   api_key:
     secure: Y2galPIGOpTJkWxNHc4WCLD7XBhWbSN8wycewlocBpEU3U5WoDoJi4NZEbDONspD
 
-install:
-- ps: >-
-    .\appveyor_install.ps1
-    iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/install-nuget-3-3-0.ps1'))
 
 build_script:
   - ps: .\build.ps1 -target Build-CI-AppVeyor -configuration Release

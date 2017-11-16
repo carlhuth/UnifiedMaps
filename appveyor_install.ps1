@@ -1,11 +1,9 @@
-$AndroidToolPath = "${env:ProgramFiles(x86)}\Android\android-sdk\tools\android.bat"
-$AndroidSdkManagerToolPath = "${env:ProgramFiles(x86)}\Android\android-sdk\tools\bin\sdkmanager.bat"
+param (
+    [string]$AndroidToolPath = "${env:ProgramFiles(x86)}\Android\android-sdk\tools\android", #$AndroidToolPath = "$env:localappdata\Android\android-sdk\tools\android"
+    [Parameter(Mandatory=$true)][string[]]$versions
+ )
 
-if (!(Test-Path $AndroidToolPath)) {
-    $AndroidToolPath = "$env:localappdata\Android\android-sdk\tools\android.bat"
-}
-
-Function Get-AndroidSDKs() {
+Function Get-AllAndroidSDKs() {
     $output = & $AndroidToolPath list sdk --all
     $sdks = $output |% {
         if ($_ -match '(?<index>\d+)- (?<sdk>.+), revision (?<revision>[\d\.]+)') {
@@ -19,7 +17,7 @@ Function Get-AndroidSDKs() {
     $sdks
 }
 
-Function Install-AndroidSDK() {
+Function Execute-AndroidSDKInstall() {
     [CmdletBinding()]
     Param(
         [Parameter(Mandatory=$true, Position=0)]
@@ -27,14 +25,26 @@ Function Install-AndroidSDK() {
     )
 
     $sdkIndexes = $sdks |% { $_.Index }
-    $sdkIndexArgument = [string]::Join(',',  $sdkIndexes)
-    Write-Output "Installing additional Android SDKs..."
-    $sdks | Format-Table Name
-
-    # Suppress the output to STDOUT
-    $null = Echo 'y' | & $AndroidToolPath update sdk -u -a -t $sdkIndexArgument
+    $sdkIndexArgument = [string]::Join(',', $sdkIndexes)
+    Echo 'y' | & $AndroidToolPath update sdk -u -a -t $sdkIndexArgument --force
 }
 
-$sdks = Get-AndroidSDKs |? { $_.name -like 'sdk platform*API 25*' -or $_.name -like 'google apis*api 25' -or $_.name -like 'build-tools' }
+Function Install-AndroidSDK
+{
+    param([string]$Level)
 
-Install-AndroidSDK -sdks $sdks
+    $sdks = Get-AllAndroidSDKs |? { $_.name -like "sdk platform*API $Level*" -or $_.name -like "google apis*api $Level" }
+    Execute-AndroidSDKInstall -sdks $sdks
+}
+
+# Tools
+Echo 'y' | & $AndroidToolPath update sdk -u -a -t tools
+Echo 'y' | & $AndroidToolPath update sdk -u -a -t platform-tools
+
+# SDKs
+foreach ($v in $versions)
+{
+    Install-AndroidSDK $v
+}
+
+exit
