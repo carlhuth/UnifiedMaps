@@ -1,8 +1,12 @@
 $AndroidToolPath = "${env:ProgramFiles(x86)}\Android\android-sdk\tools\android.bat"
-$AndroidSdkManagerToolPath = "${env:ProgramFiles(x86)}\Android\android-sdk\tools\sdkmanager.bat"
+$AndroidSdkManagerToolPath = "${env:ProgramFiles(x86)}\Android\android-sdk\tools\bin\sdkmanager.bat"
 
 if (!(Test-Path $AndroidToolPath)) {
     $AndroidToolPath = "$env:localappdata\Android\android-sdk\tools\android.bat"
+}
+
+if (!(Test-Path $AndroidSdkManagerToolPath)) {
+    $AndroidSdkManagerToolPath = "$env:localappdata\Android\android-sdk\tools\bin\sdkmanager.bat"
 }
 
 & $AndroidSdkManagerToolPath sdkmanager --list
