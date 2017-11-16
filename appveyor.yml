@@ -4,17 +4,14 @@ assembly_info:
 image: Visual Studio 2015
 
 environment:
-  ANDROID_HOME: "$env:localappdata\\Android\\android-sdk\\tools\\bin"
   api_key:
     secure: Y2galPIGOpTJkWxNHc4WCLD7XBhWbSN8wycewlocBpEU3U5WoDoJi4NZEbDONspD
 
-init:
-  - echo $ANDROID_HOME$
-
 install:
-  - echo y | $ANDROID_HOME$\sdkmanager.bat --update
-  # - ps: for($i=0;$i -lt 30;$i++) { $response += "y`n"}; $response | cmd /c 'C:\android\tools\bin\sdkmanager.bat 2>&1' --update
-
+- ps: >-
+    .\Install-Dependencies.ps1
+    iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/install-nuget-3-3-0.ps1'))
+  
 build_script:
   - ps: .\build.ps1 -target Build-CI-AppVeyor -configuration Release
 

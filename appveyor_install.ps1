@@ -1,5 +1,8 @@
-#$AndroidToolPath = "${env:ProgramFiles(x86)}\Android\android-sdk\tools\android"
-$AndroidToolPath = "$env:localappdata\Android\android-sdk\tools\android"
+$AndroidToolPath = "${env:ProgramFiles(x86)}\Android\android-sdk\tools\android.bat"
+
+if (!(Test-Path $AndroidToolPath)) {
+    $AndroidToolPath = "$env:localappdata\Android\android-sdk\tools\android.bat"
+}
 
 Function Get-AndroidSDKs() {
     $output = & $AndroidToolPath list sdk --all
@@ -23,9 +26,14 @@ Function Install-AndroidSDK() {
     )
 
     $sdkIndexes = $sdks |% { $_.Index }
-    $sdkIndexArgument = [string]::Join(',', $sdkIndexes)
-    Echo 'y' | & $AndroidToolPath update sdk -u -a -t $sdkIndexArgument
+    $sdkIndexArgument = [string]::Join(',',  $sdkIndexes)
+    Write-Output "Installing additional Android SDKs..."
+    $sdks | Format-Table Name
+
+    # Suppress the output to STDOUT
+    $null = Echo 'y' | & $AndroidToolPath update sdk -u -a -t $sdkIndexArgument
 }
 
 $sdks = Get-AndroidSDKs |? { $_.name -like 'sdk platform*API 10*' -or $_.name -like 'google apis*api 10' }
+
 Install-AndroidSDK -sdks $sdks
